@@ -1,0 +1,99 @@
+---
+title: 2016-7-29Shell学习
+tags: Shell,基础,echo
+grammar_cjkRuby: true
+---
+
+# Shell echo命令
+echo是Shell的一个内部指令，用于在屏幕上打印出指定的字符串。命令格式：
+
+``` php
+echo arg
+```
+
+
+您可以使用echo实现更复杂的输出格式控制。
+## 显示转义字符
+
+``` vbscript
+echo "\"It is a test\""
+```
+
+
+结果将是：
+"It is a test"
+
+双引号也可以省略。
+## 显示变量
+
+``` bash
+name="OK"
+echo "$name It is a test"
+```
+
+
+结果将是：
+OK It is a test
+
+同样双引号也可以省略。
+
+如果变量与其它字符相连的话，需要使用大括号（{ }）：
+
+``` bash
+mouth=8
+echo "${mouth}-1-2009"
+```
+
+
+结果将是：
+8-1-2009
+## 显示换行
+
+``` php
+echo -e "OK! \n"
+echo "It is a test"
+```
+<font color=red>输入转移字符时，反斜杠'\'要与前面的字符有至少一个空格的距离
+
+echo要使用-e选项才能实现转义</font>
+
+
+输出：
+OK!
+It is a test
+## 显示不换行
+
+``` php
+echo "OK! \c"
+echo "It is a test"
+```
+
+
+输出：
+OK!It si a test
+显示结果重定向至文件
+
+``` php
+echo "It is a test" > myfile
+```
+
+
+## 原样输出字符串
+
+若需要原样输出字符串（不进行转义），请使用单引号。例如：
+
+``` nginx
+echo '$name\"'
+```
+
+
+显示命令执行结果
+
+``` dos
+echo `date`
+```
+
+
+结果将显示当前日期
+
+从上面可看出，双引号可有可无，单引号主要用在原样输出中。
