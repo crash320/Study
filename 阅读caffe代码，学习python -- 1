@@ -1,0 +1,150 @@
+---
+title: 阅读caffe代码，学习python -- 1
+tags: 新建,模板,小书匠
+grammar_cjkRuby: true
+---
+
+# tools文件加下的python文件
+
+## _init_paths.py
+文件所在路径：/home/wzq/fast-rcnn/tools
+
+文件名：_init_paths.py
+
+具体代码：
+
+``` python
+# --------------------------------------------------------
+# Fast R-CNN
+# Copyright (c) 2015 Microsoft
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Ross Girshick
+# --------------------------------------------------------
+
+"""Set up paths for Fast R-CNN."""
+
+import os.path as osp
+import sys
+
+def add_path(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+this_dir = osp.dirname(__file__)
+
+# Add caffe to PYTHONPATH
+caffe_path = osp.join(this_dir, '..', 'caffe-fast-rcnn', 'python')
+add_path(caffe_path)
+
+# Add lib to PYTHONPATH
+lib_path = osp.join(this_dir, '..', 'lib')
+add_path(lib_path)
+```
+解释：
+\_\_file__: 为运行的pathon文件的绝对路径名，如/home/wzq/caffe/spyder/7-31.py
+dirname: 一个函数，返回路径名的目录名，dirname(\_\_file\__)的结果是：/home/wzq/caffe/spyder
+osp.join: 应该是添加路径名的意思，相当于cd命令
+
+## _init_paths.pyc
+
+经百度得知：
+pyc是二进制文件，用记事本打开只能看到乱码
+py文件作为模块杯import的时候，python为了提高解析速度，对所有这些作为模块的py文件先做一些类似编译的动作，产生相应的pyc文件。这样当别的程序再次import这些模块的时候，python就不用在重新解析这些py文件，而是读入pyc文件就可以了。
+
+如何生成pyc文件呢？
+只要不是主文件，杯引用一次后自动生成pyc
+引用文件，import文件名就好。
+
+## test_net.py
+文件所在路径：/home/wzq/fast-rcnn/tools
+
+文件名：test_net.py
+
+
+具体代码：
+
+``` python
+#!/usr/bin/env python
+
+# --------------------------------------------------------
+# Fast R-CNN
+# Copyright (c) 2015 Microsoft
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Ross Girshick
+# --------------------------------------------------------
+
+"""Test a Fast R-CNN network on an image database."""
+
+import _init_paths
+from fast_rcnn.test import test_net #表示从fast_rcnn文件夹中的test文件中引用（import）test_net文件
+from fast_rcnn.config import cfg, cfg_from_file, cfg_from_list
+from datasets.factory import get_imdb
+import caffe
+import argparse
+import pprint
+import time, os, sys
+
+def parse_args():
+    """
+    Parse input arguments
+    """
+    parser = argparse.ArgumentParser(description='Test a Fast R-CNN network')
+    parser.add_argument('--gpu', dest='gpu_id', help='GPU id to use',
+                        default=0, type=int)
+    parser.add_argument('--def', dest='prototxt',
+                        help='prototxt file defining the network',
+                        default=None, type=str)
+    parser.add_argument('--net', dest='caffemodel',
+                        help='model to test',
+                        default=None, type=str)
+    parser.add_argument('--cfg', dest='cfg_file',
+                        help='optional config file', default=None, type=str)
+    parser.add_argument('--wait', dest='wait',
+                        help='wait until net file exists',
+                        default=True, type=bool)
+    parser.add_argument('--imdb', dest='imdb_name',
+                        help='dataset to test',
+                        default='voc_2007_test', type=str)
+    parser.add_argument('--comp', dest='comp_mode', help='competition mode',
+                        action='store_true')
+    parser.add_argument('--set', dest='set_cfgs',
+                        help='set config keys', default=None,
+                        nargs=argparse.REMAINDER)
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    print('Called with args:')
+    print(args)
+
+    if args.cfg_file is not None:
+        cfg_from_file(args.cfg_file)
+    if args.set_cfgs is not None:
+        cfg_from_list(args.set_cfgs)
+
+    print('Using config:')
+    pprint.pprint(cfg)
+
+    while not os.path.exists(args.caffemodel) and args.wait:
+        print('Waiting for {} to exist...'.format(args.caffemodel))
+        time.sleep(10)
+
+    caffe.set_mode_gpu()
+    caffe.set_device(args.gpu_id)
+    net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
+    net.name = os.path.splitext(os.path.basename(args.caffemodel))[0]
+
+    imdb = get_imdb(args.imdb_name)
+    imdb.competition_mode(args.comp_mode)
+
+    test_net(net, imdb)
+```
+### python中引用(import)文件夹下的py文件的方法
+如果要包含目录下的文件，需要在该目录下声明一个\_\_init__.py文件，即使这个文件是空的也可以。当然也可以初始一些数据。
